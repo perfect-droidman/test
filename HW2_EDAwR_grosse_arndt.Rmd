@@ -1,0 +1,351 @@
+---
+title: "HW2-EDA with R - Part1: Plotting"
+author: "gGrosse jArndt"
+date: ""
+output: html_document
+---
+## Step 4 - Complete the following R tasks and answer questions
+
+Now you'll need to complete the following tasks in R. Just like we did in class, you should
+use a combination of markdown text (be concise, no need to write tons of text) 
+to explain what you are doing and R code chunks to actually do it.
+When you are done, use the "Knit" button to generate an HTML file from your R Markdown.
+
+Note that if you have errors in your R code, **knitr** will stop at the error
+and won't create an html file. Sooo, you should comment out R code that has
+errors and write a little comment stating that it's an error. Keep doing this
+until you successfully knit an html file based on your R Markdown document.
+You'll be submitting both the html file as well as the Rmd file.
+
+You'll be submitting BOTH the completed R Markdown file as well as the generated HTML file. You'll notice that I've left some empty code chunks
+as well as some partially filled in code chunks. Of course, feel free to
+add more code chunks as needed.
+
+Let's load a few libraries we'll need:
+
+```{r}
+library(ggplot2)
+```
+
+
+### Problem 1 - Get the data into a dataframe
+
+You should read the **county.csv** file into a data frame named county_df and
+**county_mi_df.csv** into a data frame named county_mi_df.
+
+```{r read_countydata}
+county_df <- read.csv("data/county.csv")
+county_mi_df <- read.csv("data/county_MI.csv")
+
+```
+
+* What does each row represent?
+
+> Each row represents either a state's county or Michigan's counties.
+
+Check the structure of each data.frame and use the `summary` function to begin
+exploring the data. 
+
+* Are there any NA values? 
+* What differences do you notice between the structure of the two data frames.
+
+
+```{r Show_countydata}
+str(county_df)
+str(county_mi_df)
+summary(county_df)
+summary(county_mi_df)
+```
+
+> The differences between the two data frames is that the county_mi_df has more colums than the other. The reason being is that we are looking at a specfic state structure rather that multiple states at once. From the structures and the summaries there do seem to be some NAs that are implicit.
+
+**Unless otherwise specified, you should use the ggplot2 package for all of the
+following plots.**
+
+### Problem 2 - Basic plots for Income
+
+Create a histogram and a kernel density plot for Income and for IncomePerCap for the entire US (i.e. use the `county_df` dataframe.) The Income field is median income for the county and IncomePerCap is aggregate income divided by population size, for the county.
+
+In addition, compute and display the following statistics for Income and IncomePerCap:
+
+* mean and median
+* standard deviation
+* min, max and range
+* 95th and 99th percentile
+* IQR
+* coefficient of variation
+
+
+```{r summary_stats}
+##Values
+meanIncome <- mean(county_df$Income)
+medianIncome <- median(county_df$Income)
+standIncome <- sd(county_df$Income)
+minIncome <- min(county_df$Income)
+maxIncome <- max(county_df$Income)
+rangeIncome <- range(county_df$Income)
+percentilesIncome <- quantile(county_df$Income, probs = c(.95, .99))
+IQRIncome <- IQR(county_df$Income)
+cvIncome <- standIncome / meanIncome * 100
+
+##output
+meanIncome
+medianIncome
+standIncome
+minIncome
+maxIncome
+rangeIncome
+percentilesIncome
+IQRIncome
+cvIncome
+
+##Values
+
+meanIncomePerCap <- mean(county_df$IncomePerCap)
+medianIncomePerCap <- median(county_df$IncomePerCap)
+standIncomePerCap <- sd(county_df$IncomePerCap)
+minIncomePerCap <- min(county_df$IncomePerCap)
+maxIncomePerCap <- max(county_df$IncomePerCap)
+rangeIncomePerCap <- range(county_df$IncomePerCap)
+percentilesIncomePerCap <- quantile(county_df$IncomePerCap, probs = c(.95, .99))
+IQRIncomePerCap <- IQR(county_df$IncomePerCap)
+cvIncomePerCap <- standIncomePerCap / meanIncomePerCap * 100
+
+##output
+meanIncomePerCap
+medianIncomePerCap
+standIncomePerCap
+minIncomePerCap
+maxIncomePerCap
+rangeIncomePerCap
+percentilesIncomePerCap
+IQRIncomePerCap
+cvIncomePerCap
+```
+
+```{r histo_dens}
+plot <- ggplot(county_df) + geom_histogram(aes(x = Income))
+plot_2 <- ggplot(county_df) + geom_histogram(aes(x = IncomePerCap))
+
+plot_density1 <- ggplot(county_df) + geom_density(aes(x = Income), fill="grey50")
+plot_density2 <- ggplot(county_df) + geom_density(aes(x = IncomePerCap), fill="grey50")
+
+
+plot
+plot_2
+
+plot_density1
+plot_density2
+```
+
+
+Write a short paragraph describing the distribution of of these two variables.
+
+> >Both of the graphs above show that both of the variables are right skewed or they both have a positive skewness. The standard deviation of both variables tells us that there is a lot of variation in the data points. Looking at the graph confirms this. The mean of county_PerCap is a little over 2600.The graph shows us that there's a substantial amount of data on either side of the 2600.
+
+Repeat the histogram for Income but make the following style changes to the plot.
+
+* Add a title such as "Distribution of median income for US counties"
+* Change y-axis label to "Number of counties"
+* Change x-axis label to "Median income"
+* Change the colors of the bars to something other than the default
+
+```{r histo_stylechanges}
+newHisto <- ggplot(county_df) + geom_histogram(aes(x = Income), fill="lightblue")
+print(newHisto + labs(y="Number of Counties", x="Median Income") + ggtitle("Median Income by Number of Counties"))
+```
+
+Now create a set of histograms for Income in which you facet by Division.
+
+```{r histos_division}
+ggplot(county_df) +
+  geom_histogram(aes(x=Income)) +
+  facet_wrap(~ Division, scale="free_y")
+```
+
+Since the number of counties varies by Division, create a new version of the plot above but modify so that the y-axis shows frequency percentages instead of
+counts. Hint: `..density..`
+
+```{r histos_division_density}
+ggplot(county_df) +
+  geom_histogram(aes(x=Income, y=..density..)) +
+  facet_wrap(~ Division, scale = "free_y")
+```
+
+
+Now create boxplots and violin plots for the same two variables. However, you'll
+see that for both of these plot types, ggplot wants an `x` aesthetic to act as a grouping variable. Use the `region` field as your `x` aesthetic. Note anything of interest revealed by these plots.
+
+```{r box_violin}
+# Boxplots and violin plots
+gBoxPlot1 <- ggplot(county_df, aes(x='region', y=county_df$Income))
+gBoxPlot2 <- ggplot(county_df, aes(x='region', y=county_df$IncomePerCap))
+
+gViolinPlot1 <- ggplot(county_df, aes(x='region', y=county_df$Income))
+gViolinPlot2 <- ggplot(county_df, aes(x='region', y=county_df$IncomePerCap))
+
+gBoxPlot1 + geom_boxplot()
+gBoxPlot2 + geom_boxplot()
+
+gViolinPlot1 + geom_violin()
+gViolinPlot2 + geom_violin()
+```
+
+> Your interpretation ...
+> The first box plot and the first violin plot show that region and income that there is a big difference in each region and isn't very spread out as it should be. For the box plots they are evenly distributed. For the violin plots the densities are very much normally distributed just like the box plots at the median.
+
+Repeat the histogram of Income but only for counties with less than 500,000 people. Do NOT use
+dplyr to do the filtering - instead, use boolean indexing (see intro to dataframes Rmd file).
+
+```{r histo_lt1.5m1}
+index <- county_df[county_df$TotalPop < 500000,]
+plot <- ggplot(index) + geom_histogram(aes(x = Income))
+plot
+```
+
+**Hacker Extra** - Also create a kernel density plot of Income overlaid on a histogram of
+Income. 
+
+```{r hackerxtra_kdoverlay}
+
+```
+
+### Problem 3 - How do Michigan's peninsulas compare?
+
+Create violin plots showing Income by peninsula. Make sure
+your graph has a title and good axis labels.
+
+```{r vp_inc_by_peninsula}
+michiganViolin <- ggplot(county_mi_df) + geom_violin(aes(x=peninsula, y=Income), trim = FALSE) + scale_y_log10()
+print(michiganViolin + labs(y="Median Income", x="Peninsulas") + ggtitle("Michigan Peninsulas by Median Income"))
+```
+
+Do the peninsulas 
+differ with respect to distribution of median income over the counties?
+
+> Yes they do differ with respect to distribution becasue the Lower Peninsula has more population than that of the Upper peninsula so the median income with respect to the two peninsulas.
+
+Create several boxplots and/or violin plots showing how the peninsulas compare with respect to
+some of the other variables. Summarize your findings in a few short paragraphs.
+
+```{r boxplots_upvlp}
+#MeanCommute vs peninsula
+penCommute <- ggplot(county_mi_df) + geom_violin(aes(x = peninsula, y = MeanCommute), trim = FALSE)
+print(penCommute + labs(y="Mean Commute", x="Peninsulas") + ggtitle("Mean Commute by Peninsula"))
+#Employed vs peninsula
+penEmployed <- ggplot(county_mi_df) + geom_violin(aes(x = peninsula, y = Employed), trim = FALSE) + scale_y_log10()
+print(penEmployed + labs(y="Employed", x="Peninsulas") + ggtitle("How many employed from either Peninsula"))
+#Unemployment vs peninsula
+penUnemployment <- ggplot(county_mi_df) + geom_violin(aes(x = peninsula, y = Unemployment), trim = FALSE)
+print(penUnemployment + labs(y="Unemployment", x="Peninsulas") + ggtitle("Unemployment by Peninsula"))
+# rm(penProduction)
+```
+
+> From the violin plots Mean Commute, number of people employed, and the number of people unemployed have more of an impact on the Lower Peninsula than the upper peninsula due to the population of people that live in the upper peninsula.
+
+
+### Problem 4 - Basic bar chart
+
+Create a bar chart showing the number of counties by State in the US. Make sure
+your graph has a title and good axis labels. Figure out how to format the
+x-axis labels so that they don't obscure each other.
+
+```{r bar_counties_by_state}
+countiesState <- ggplot(county_df, y = County) + geom_bar(aes(x = State))
+countiesState <- countiesState + theme(axis.text.x = element_text(color="black", size=11, angle=90, vjust = .8, hjust = 0.8))
+countiesState <- countiesState + labs(y="Counties", x="State") + ggtitle("Number of Counties per State")
+
+countiesState
+```
+
+**Hacker Extra** Modify the above bar plot to be horizontal and have bars sorted from longest to shortest. In addition, map the bar color to the Region variable.
+>We tried to get those code for the hacker extra to work and we couldn't. We were so clsoe and it was really frustrating to get all the way there and not get that one last tiny piece.
+
+```{r bar_counties_by_state_hackerxtra, fig.height=6}
+countiesState <- ggplot(county_df, aes( x = reorder(State, State, function(x) + length(x)), fill = Region)) + geom_bar() + theme(axis.text.x =element_text(angle = 90)) +  coord_flip()
+print(countiesState + labs(y ='County', x='State') + ggtitle('Number of Counties by State'))
+
+```
+
+### Problem 5 - Basic scatter plots
+
+Create a scatter plot using the Michigan only data frame comparing
+IncomePerCap and MeanCommute.
+
+```{r xy_inc_commute}
+meanCommuteIncomePerCap <- ggplot(county_mi_df, aes(x = IncomePerCap, y = MeanCommute)) + geom_point()
+meanCommuteIncomePerCap + labs(y="Mean Commute", x="Income Per Cap") + ggtitle("Mean Commute per IncomePerCap")
+```
+
+Create a modified version of the above scatter plot in which the point color
+is mapped to peninsula and the size is mapped to total population. In addition,
+create a similar plot comparing Income and Professional.
+
+```{r xy_inc_commute_peninsula}
+# Scatter Pot for Income Per Cap and Mean Commute 
+meanplot2 <- ggplot(county_mi_df, aes(x=IncomePerCap, y=MeanCommute)) + geom_point(aes(color = peninsula, size=TotalPop))
+meanplot2 + labs(y="Mean Commute", x="Income Per Cap") + ggtitle("Mean Commute per IncomePerCap")
+
+# Scatter Plot for Income and Professional
+incomeProfessional <- ggplot(county_mi_df, aes(x=Income, y=Professional)) + geom_point(aes(color = peninsula, size=TotalPop))
+incomeProfessional + labs(y="Professional", x="Income") + ggtitle("Income by Professional")
+
+```
+
+> Your thoughts on the relationship between these variables?
+> Looking at the plot there doesn't seem to be any correlation between Mean Commute and IncomePerCap. On the other hand, Professional and Income seem to have a positive correlation, with most of the professional data points being in the lower peninsula.
+
+Now, create a few more scatter plots using variables of your choosing in which
+you facet by peninsula as well. How do the relationships compare across the
+peninsulas?
+
+> Most of the relationships in the graphs stayed consistent in the UP and the LP. The first graph shows a postive correlation between Professional and Income and that's true of both graphs. The third graph shows a negative correlation between driving and people working at home and that's also consistent between both peninsulas. The second graph is tough because there's a clear negative correlation between income and poverty in the UP but all of the data points are hovering right in the middle of the graph of the LP. I would love to have some more data points just so I can see if there is a negative correlation in the Lp or if poverty is independant of income.
+
+
+```{r xy_faceted_peninsula1}
+## Scatter PLot of Income and Professional
+scatterIncome <- ggplot(county_mi_df, aes(x=Income, y=Professional)) + 
+  geom_point(aes(color = peninsula, size=TotalPop)) +
+  facet_wrap(~ peninsula, scale="free_y")
+scatterIncome
+## Scatter Plot of Income and Poverty
+scatterPoverty <- ggplot(county_mi_df, aes(x=Income, y=Poverty)) + 
+  geom_point(aes(color = peninsula, size=TotalPop))  + 
+  facet_wrap(~ peninsula, scale="free_y")
+  scatterPoverty
+##Scatter plot of people who work at home and drive
+scatterWalk <- ggplot(county_mi_df, aes(x = WorkAtHome, y = Drive)) + 
+  geom_point(aes(color = peninsula, size=TotalPop))  + 
+  facet_wrap(~ peninsula, scale="free_y")
+  scatterWalk
+```
+
+Now use the full US data frame, county_df.
+
+Create a scatter plot of TotalPop by Incompetent.
+
+```{r xy_pop_inc}
+scatterTotalPop <- ggplot(county_df, aes(x=TotalPop, y=IncomePerCap)) + 
+  geom_point(aes(size=TotalPop))
+scatterTotalPop
+```
+
+
+The widely varying values make this difficult to interpret in terms of looking
+for patterns. So, figure out a way to either change the axis scales or 
+the plotted data itself to use a base 10 logarithmic scale (or transform).
+Write a short paragraph on why one might want to use a log scale or log
+transform of data when plotting.
+
+
+```{r log10}
+scatterTotalPop <- ggplot(county_df, aes(x=TotalPop, y=IncomePerCap)) + 
+  geom_point(aes(size=TotalPop)) + scale_x_log10()
+scatterTotalPop + xlab("Total Population (TotalPop)") + ylab("Income per Cap ($)")
+
+# scatterTotalPop <- ggplot(county_df, aes(x=TotalPop, y=IncomePerCap)) + 
+#   geom_point(aes(size=TotalPop)) + log10(x) 
+# scatterTotalPop
+```
+
+> The data wouldn't be scale without the log scale. Due this the graph would look like something like in the last code chunk and therefore a log is needed. The numbers in that last chunk are high for a small variable and because of this again a log must be used to scale down the data and make the graph readable.
